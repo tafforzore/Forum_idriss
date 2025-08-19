@@ -1,68 +1,15 @@
 version: '3.8'
 
 services:
-  # Serveur Nginx
-  nginx:
-    image: nginx:alpine
-    container_name: forum-nginx
-    ports:
-      - "80:80"
-    volumes:
-      - ./:/var/www/html
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
-    depends_on:
-      - php
-    networks:
-      - forum-network
-
-  # PHP-FPM
-  php:
+  app:
     build: .
-    container_name: forum-php
-    volumes:
-      - ./:/var/www/html
-    environment:
-      - DB_HOST=mysql
-      - DB_NAME=forum_db
-      - DB_USER=root
-      - DB_PASSWORD=rootpassword
-    networks:
-      - forum-network
-
-  # Base de données MySQL
-  mysql:
-    image: mysql:8.0
-    container_name: forum-mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: forum_db
-    volumes:
-      - mysql_data:/var/lib/mysql
-      - ./database/forum_db.sql:/docker-entrypoint-initdb.d/forum_db.sql
     ports:
-      - "3306:3306"
-    networks:
-      - forum-network
-
-  # phpMyAdmin (optionnel)
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    container_name: forum-phpmyadmin
+      - "8000:8000"
     environment:
-      PMA_HOST: mysql
-      PMA_PORT: 3306
-      PMA_USER: root
-      PMA_PASSWORD: rootpassword
-    ports:
-      - "8080:80"
-    depends_on:
-      - mysql
-    networks:
-      - forum-network
-
-volumes:
-  mysql_data:
-
-networks:
-  forum-network:
-    driver: bridge
+      - DB_HOST=${DB_HOST}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_PORT=${DB_PORT}
+    volumes:
+      - .:/var/www/html

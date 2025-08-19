@@ -9,7 +9,8 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     git \
-    curl
+    curl \
+    nginx
 
 # Configuration de GD
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
@@ -24,15 +25,24 @@ RUN docker-php-ext-install \
 # Installation de Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+# Configuration de Nginx
+COPY railway-nginx.conf /etc/nginx/sites-available/default
+
 # Définition du répertoire de travail
 WORKDIR /var/www/html
+
+# Copie des fichiers de l'application
+COPY . .
 
 # Correction des permissions
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html
 
-# Exposition du port
-EXPOSE 9000
+# Exposition du port (Railway utilise le port 8000 par défaut)
+EXPOSE 8000
 
-# Commande de démarrage
-CMD ["php-fpm"]
+# Script de démarrage pour Railway
+COPY railway-start.sh /railway-start.sh
+RUN chmod +x /railway-start.sh
+
+CMD ["/railway-start.sh"]
